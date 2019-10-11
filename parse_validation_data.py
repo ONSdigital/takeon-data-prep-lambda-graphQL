@@ -20,7 +20,7 @@ def parse_validation_data(json_input):
 
         question_list.append(question_details_dict)
         rule_dict['question_details'] = question_list
-        val_config_list.append(rule_dict)
+        validation_config_list.append(rule_dict)
 
 
     return validation_config_list

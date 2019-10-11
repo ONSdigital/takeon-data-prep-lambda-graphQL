@@ -1,0 +1,191 @@
+{
+  "service": {
+    "service": "TakeOn-Data-Prep",
+    "serviceObject": {
+      "name": "TakeOn-Data-Prep"
+    },
+    "provider": {
+      "stage": "dev",
+      "variableSyntax": "\\${([ ~:a-zA-Z0-9._@'\",\\-\\/\\(\\)*]+?)}",
+      "name": "aws",
+      "runtime": "python3.7",
+      "region": "eu-west-2",
+      "vpc": {
+        "securityGroupIds": [
+          "sg-06881d0a7f22108fd"
+        ],
+        "subnetIds": [
+          "subnet-07cb86ea5c7e94651"
+        ]
+      },
+      "versionFunctions": true,
+      "remoteFunctionData": null,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "MainLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/TakeOn-Data-Prep-dev-main"
+            }
+          },
+          "MainLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/TakeOn-Data-Prep/dev/1570779388088-2019-10-11T07:36:28.088Z/TakeOn-Data-Prep.zip"
+              },
+              "FunctionName": "TakeOn-Data-Prep-dev-main",
+              "Handler": "handler.run_data_prep",
+              "MemorySize": 512,
+              "Role": "arn:aws:iam::014669633018:role/Take-On-Service",
+              "Runtime": "python3.7",
+              "Timeout": 30,
+              "Environment": {
+                "Variables": {
+                  "INPUT_QUEUE_URL": "https://sqs.eu-west-2.amazonaws.com/014669633018/TakeOn-DataPrep-Input",
+                  "OUTPUT_QUEUE_URL": "https://sqs.eu-west-2.amazonaws.com/014669633018/TakeOn-Validation-Wrangler",
+                  "ERROR_QUEUE_URL": "https://sqs.eu-west-2.amazonaws.com/014669633018/TakeOn-Validation-HandledErrors"
+                }
+              },
+              "VpcConfig": {
+                "SecurityGroupIds": [
+                  "sg-06881d0a7f22108fd"
+                ],
+                "SubnetIds": [
+                  "subnet-07cb86ea5c7e94651"
+                ]
+              },
+              "Layers": [
+                "arn:aws:lambda:eu-west-2:014669633018:layer:takeon-python-layer:2"
+              ]
+            },
+            "DependsOn": [
+              "MainLogGroup"
+            ]
+          },
+          "MainLambdaVersiondDlUd9BqlSDEUSp9RYNiPqd2CiUbNFM7fn9TPZDSR0": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "MainLambdaFunction"
+              },
+              "CodeSha256": "gkfJiMNbtX0W9/hX9NhyHDU1iKMyRcRLdxc2WjGm8K8="
+            }
+          },
+          "MainEventSourceMappingSQSTakeOnDataPrepInput": {
+            "Type": "AWS::Lambda::EventSourceMapping",
+            "DependsOn": [],
+            "Properties": {
+              "BatchSize": 1,
+              "EventSourceArn": "arn:aws:sqs:eu-west-2:014669633018:TakeOn-DataPrep-Input",
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "MainLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Enabled": "True"
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          },
+          "MainLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "MainLambdaVersiondDlUd9BqlSDEUSp9RYNiPqd2CiUbNFM7fn9TPZDSR0"
+            }
+          }
+        }
+      },
+      "coreCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          }
+        }
+      }
+    },
+    "pluginsData": {},
+    "functions": {
+      "main": {
+        "handler": "handler.run_data_prep",
+        "role": "arn:aws:iam::014669633018:role/Take-On-Service",
+        "environment": {
+          "INPUT_QUEUE_URL": "https://sqs.eu-west-2.amazonaws.com/014669633018/TakeOn-DataPrep-Input",
+          "OUTPUT_QUEUE_URL": "https://sqs.eu-west-2.amazonaws.com/014669633018/TakeOn-Validation-Wrangler",
+          "ERROR_QUEUE_URL": "https://sqs.eu-west-2.amazonaws.com/014669633018/TakeOn-Validation-HandledErrors"
+        },
+        "events": [
+          {
+            "sqs": {
+              "arn": "arn:aws:sqs:eu-west-2:014669633018:TakeOn-DataPrep-Input",
+              "batchSize": 1
+            }
+          }
+        ],
+        "timeout": 30,
+        "memorySize": 512,
+        "layers": [
+          "arn:aws:lambda:eu-west-2:014669633018:layer:takeon-python-layer:2"
+        ],
+        "name": "TakeOn-Data-Prep-dev-main",
+        "package": {},
+        "memory": 512,
+        "runtime": "python3.7",
+        "vpc": {}
+      }
+    },
+    "serviceFilename": "serverless.yml",
+    "layers": {},
+    "artifact": "/Users/ryan/Git-repos/takeon-data-prep-lambda-graphQL/.serverless/TakeOn-Data-Prep.zip"
+  },
+  "package": {
+    "artifactDirectoryName": "serverless/TakeOn-Data-Prep/dev/1570779388088-2019-10-11T07:36:28.088Z",
+    "artifact": "TakeOn-Data-Prep.zip"
+  }
+}
