@@ -1,5 +1,5 @@
 from parse_validation_data import parse_validation_data
-frpm output_to_queue import output_to_queue
+from output_to_queue import output_to_queue
 import json
 import boto3
 import os
