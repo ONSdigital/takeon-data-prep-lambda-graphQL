@@ -38,7 +38,7 @@ def run_data_prep(event, context):
         #return(query_response.content)
     except:
         print("{\"Error\": \"Problem with call to Business Layer\"}")
-        print('Response: ' + query_response)
+        print('Response: ' + str(query_response))
         print(query_response.content, "CONTENT")
         print(query_response.text, "TEXT")
         print(query_response.status_code, "STATUS CODE")
