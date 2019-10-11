@@ -1,4 +1,5 @@
 from parse_validation_data import parse_validation_data
+frpm output_to_queue import output_to_queue
 import json
 import boto3
 import os
@@ -54,5 +55,29 @@ def run_data_prep(event, context):
     print("Parsed Validation Data : " + str(parsed_validation_config))
 
     # Extract response and contributor data
+    contributor_reference = query_output['reference']
+    period = query_output['period']
+    periodicity = query_output['periodicity']
+    survey = query_output['survey']
+    response_details = query_output['response']
+    contributor_details = query_output['contributor']
 
     # Combine all data together
+    data_output = {}
+    data_output.update{"validation_period": period,
+                        "validation_reference": contributor_reference,
+                        "validation_survey": survey,
+                        "periodicity": periodicity,
+                        "bpmid": bpmId,
+                        "contributor": contributor_details,
+                        "response": response_details,
+                        "validation_config": parsed_validation_config
+                         }
+
+    print("Output to queue: " + str(data_output))
+
+    # Send data to output queue for the Wrangler to pick up
+    try:
+        output_to_queue(data_output)
+    except:
+        ("{\"Error\": \"Problem with sending data to output queue\"}")
