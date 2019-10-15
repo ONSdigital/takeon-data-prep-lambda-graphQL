@@ -35,7 +35,6 @@ def run_data_prep(event, context):
         print(query_response.text, "TEXT")
         print(query_response.content, "CONTENT")
         print(query_response.status_code, "STATUS CODE")
-        #return(query_response.content)
     except:
         print("{\"Error\": \"Problem with call to Business Layer\"}")
         print('Response: ' + str(query_response))
@@ -64,7 +63,7 @@ def run_data_prep(event, context):
 
     # Combine all data together
     data_output = {}
-    data_output.update{"validation_period": period,
+    data_output.update("validation_period": period,
                         "validation_reference": contributor_reference,
                         "validation_survey": survey,
                         "periodicity": periodicity,
@@ -72,12 +71,13 @@ def run_data_prep(event, context):
                         "contributor": contributor_details,
                         "response": response_details,
                         "validation_config": parsed_validation_config
-                         }
+                         )
 
-    print("Output to queue: " + str(data_output))
+    print("Output to Wrangler queue: " + str(data_output))
 
     # Send data to output queue for the Wrangler to pick up
     try:
         output_to_queue(data_output)
+        ("{\"Success\": \"Data sent to output queue\"}")
     except:
         ("{\"Error\": \"Problem with sending data to output queue\"}")
