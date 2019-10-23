@@ -54,26 +54,18 @@ def run_data_prep(event, context):
     print("Parsed Validation Data : " + str(parsed_validation_config))
 
     # Extract response and contributor data
-    contributor_reference = query_output['reference']
-    period = query_output['period']
-    periodicity = query_output['periodicity']
-    survey = query_output['survey']
-    response_details = query_output['response']
-    contributor_details = query_output['contributor']
-
     # Combine all data together
     data_output = {}
-    data_output.update("validation_period": period,
-                        "validation_reference": contributor_reference,
-                        "validation_survey": survey,
-                        "periodicity": periodicity,
-                        "bpmid": bpmId,
-                        "contributor": contributor_details,
-                        "response": response_details,
-                        "validation_config": parsed_validation_config
-                         )
+    data_output['validation_period'] = period
+    data_output['validation_reference'] = reference
+    data_output['validation_survey'] = survey
+    data_output['periodicity'] = query_output['periodicity']
+    data_output['bpmid'] = bpmId
+    data_output['contributor'] = query_output['contributor']
+    data_output['response'] = query_output['response']
+    data_output['validation_config'] = parsed_validation_config
 
-    print("Output to Wrangler queue: " + str(data_output))
+    print("Output to queue: " + str(data_output))
 
     # Send data to output queue for the Wrangler to pick up
     try:
