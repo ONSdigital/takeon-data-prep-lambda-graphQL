@@ -54,16 +54,18 @@ functions:
       INPUT_QUEUE_URL: ${file(./serverless-config.json):INPUT_QUEUE_URL}
       OUTPUT_QUEUE_URL: ${file(./serverless-config.json):OUTPUT_QUEUE_URL}
       ERROR_QUEUE_URL: ${file(./serverless-config.json):ERROR_QUEUE_URL}
-    # vpc:
-    #   securityGroupIds:
-    #     - ${file(./config.dev.json):SECURITY_GROUP_ID}
-    #   subnetIds:
-    #     - ${file(./config.dev.json):SUBNET_ID}
+      BUSINESS_LAYER_ENDPOINT: ${file(./serverless-config.json):BUSINESS_LAYER_ENDPOINT}
+
+    vpc:
+      securityGroupIds:
+        - sg-06fc64d77bd38bea1
+      subnetIds:
+        - subnet-0cbc63301c37a86ca
     events:
       - sqs:
          arn: ${file(./serverless-config.json):INPUT_QUEUE_ARN}
          batchSize: 1
-    timeout: 30
+    timeout: 3
     memorySize: 512
     layers:
       - arn:aws:lambda:eu-west-2:014669633018:layer:takeon-python-layer:2
