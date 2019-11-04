@@ -1,8 +1,16 @@
 from parse_validation_data import parse_validation_data
 from output_to_queue import output_to_queue
 import json
+import boto3
 import os
 import requests
+
+# Set up clients
+sqs = boto3.client('sqs')
+
+business_layer_endpoint = 'http://acd672ad1dba911e9b80c06730e330a1-810cfc05332f14cf.elb.eu-west-2.amazonaws.com:8088/contributor/validationPrepConfig/'
+business_layer_local_endpoint = 'http://192.168.99.102:31447/contributor/validationPrepConfig/'
+
 
 def run_data_prep(event, context):
     print('Event: ' + str(event))
@@ -18,8 +26,6 @@ def run_data_prep(event, context):
 
     query_response = "{\"Error\": \"No data found\"}"
     query_vars = 'reference=' + reference + ';' + 'period=' + period + ';' + 'survey=' + survey + ';'
-
-    business_layer_endpoint = os.getenv("BUSINESS_LAYER_ENDPOINT")
     call_to_business_layer = business_layer_endpoint + query_vars
     print('Call to Business Layer: ' + call_to_business_layer)
 
@@ -29,14 +35,14 @@ def run_data_prep(event, context):
         print(query_response.text, "TEXT")
         print(query_response.content, "CONTENT")
         print(query_response.status_code, "STATUS CODE")
-        # return(query_response.content)
     except:
         print("{\"Error\": \"Problem with call to Business Layer\"}")
         print('Response: ' + str(query_response))
         print(query_response.content, "CONTENT")
         print(query_response.text, "TEXT")
         print(query_response.status_code, "STATUS CODE")
-        return (query_response.content)
+        return(query_response.content)
+
 
     # Parse String output to JSON
     query_output = json.loads(query_response.content)
@@ -48,24 +54,30 @@ def run_data_prep(event, context):
     print("Parsed Validation Data : " + str(parsed_validation_config))
 
     # Extract response and contributor data
+    contributor_reference = query_output['reference']
+    period = query_output['period']
+    periodicity = query_output['periodicity']
+    survey = query_output['survey']
+    response_details = query_output['response']
+    contributor_details = query_output['contributor']
+
     # Combine all data together
     data_output = {}
-    data_output['validation_period'] = period
-    data_output['validation_reference'] = reference
-    data_output['validation_survey'] = survey
-    data_output['periodicity'] = query_output['periodicity']
-    data_output['bpmid'] = bpmId
-    data_output['contributor'] = query_output['contributor']
-    data_output['response'] = query_output['response']
-    data_output['validation_config'] = parsed_validation_config
+    data_output.update("validation_period": period,
+                        "validation_reference": contributor_reference,
+                        "validation_survey": survey,
+                        "periodicity": periodicity,
+                        "bpmid": bpmId,
+                        "contributor": contributor_details,
+                        "response": response_details,
+                        "validation_config": parsed_validation_config
+                         )
 
-    print("Output to queue: " + str(data_output))
+    print("Output to Wrangler queue: " + str(data_output))
 
     # Send data to output queue for the Wrangler to pick up
-    queue_url = os.getenv("OUTPUT_QUEUE_URL")
-    print("queue_url: " + queue_url)
-    msg = output_to_queue(queue_url, json.dumps(data_output))
-    if msg is not None:
-        print('Sent message to wrangler queue successfully')
-    else:
-        print('Error in output_to_queue step. Please check its log.')
+    try:
+        output_to_queue(data_output)
+        ("{\"Success\": \"Data sent to output queue\"}")
+    except:
+        ("{\"Error\": \"Problem with sending data to output queue\"}")
