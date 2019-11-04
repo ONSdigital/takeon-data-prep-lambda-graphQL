@@ -1,15 +1,7 @@
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
+# This is the serverless deployment file of this repo to deploy into aws.
 #
 # For full config options, check the docs:
 #    docs.serverless.com
-#
-# Happy Coding!
 
 service: TakeOn-Data-Prep # NOTE: update this with your service name
 #app: your-app-name
@@ -25,11 +17,6 @@ provider:
   runtime: python3.7
   region: eu-west-2
   stage: dev
-  vpc:
-   securityGroupIds:
-    - sg-06881d0a7f22108fd
-   subnetIds:
-    - subnet-07cb86ea5c7e94651
 
 package:
  exclude:
@@ -48,8 +35,6 @@ functions:
   main:
     handler: handler.run_data_prep
     role: ${file(./serverless-config.json):EXECUTION_ROLE_ARN}
-    # layers:
-    #   -
     environment:
       INPUT_QUEUE_URL: ${file(./serverless-config.json):INPUT_QUEUE_URL}
       OUTPUT_QUEUE_URL: ${file(./serverless-config.json):OUTPUT_QUEUE_URL}
@@ -58,9 +43,9 @@ functions:
 
     vpc:
       securityGroupIds:
-        - sg-06fc64d77bd38bea1
+        - ${file(./serverless-config.json):SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0cbc63301c37a86ca
+        - ${file(./serverless-config.json):SUBNET_ID}
     events:
       - sqs:
          arn: ${file(./serverless-config.json):INPUT_QUEUE_ARN}
