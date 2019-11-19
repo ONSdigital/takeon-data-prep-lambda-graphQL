@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 cd dataprep-deploy-repository
 echo Packaging serverless bundle...
