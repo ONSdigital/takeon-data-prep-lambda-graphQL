@@ -1,6 +1,4 @@
-# Function to send data to queue
 import boto3
-# import logging
 from botocore.exceptions import ClientError
 
 
