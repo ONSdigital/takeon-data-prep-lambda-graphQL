@@ -4,11 +4,13 @@ from botocore.exceptions import ClientError
 
 
 def send_to_wrangler_queue(config_data):
-    return send_to_queue(QueueUrl=os.getenv("OUTPUT_QUEUE_URL"), MessageBody=config_data)
+    print(f'Validation config data placed on wrangler queue')
+    return send_to_queue(os.getenv("OUTPUT_QUEUE_URL"), config_data)
 
 
 def send_to_error_queue(error_message):
-    return send_to_queue(QueueUrl=os.getenv("ERROR_QUEUE_URL"), MessageBody=error_message)
+    print(f'Placing error details on error queue')
+    return send_to_queue(os.getenv("ERROR_QUEUE_URL"), error_message)
 
 
 def send_to_queue(queue, message):
@@ -16,6 +18,6 @@ def send_to_queue(queue, message):
     try:
         msg = sqs_client.send_message(QueueUrl=queue, MessageBody=message)
     except ClientError as e:
-        f'Error sending message to queue {e}'
+        print(f'Error sending message to queue {e}')
         return None
     return msg
