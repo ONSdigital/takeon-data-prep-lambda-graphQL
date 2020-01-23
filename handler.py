@@ -1,71 +1,27 @@
-from parse_validation_data import parse_validation_data
-from output_to_queue import output_to_queue
 import json
-import os
-import requests
+from aws_queue import send_to_error_queue, send_to_wrangler_queue
+from api_calls import build_data_endpoint_url, call_endpoint_to_get_validation_config
+
 
 def run_data_prep(event, context):
-    print('Event: ' + str(event))
-    queue_data = event['Records'][0]['body']
+    f'AWS source event: {event}'
+    contributor_definition = extract_json_from_eventbody(event)
+    api_datasource_endpoint = build_data_endpoint_url(contributor_definition)
+
+    f'Calling validation data/config endpoint: {api_datasource_endpoint}'
+    validation_config = call_endpoint_to_get_validation_config(api_datasource_endpoint)
+
+    if validation_config is None:
+        send_to_error_queue(f'Error loading validation config data using: {api_datasource_endpoint}')
+
+    validation_config['bpmid'] = contributor_definition['bpmId']
+    f'Validation config data to place on wrangler queue: {validation_config}'
+
+    if send_to_wrangler_queue(validation_config) is None:
+        send_to_error_queue(f'Error sending validation config to wrangler queue')
+
+
+def extract_json_from_eventbody(aws_event):
+    queue_data = aws_event['Records'][0]['body']
     reference_data = queue_data.strip('\n')
-    json_reference_data = json.loads(reference_data)
-
-    print('Data from queue: ' + str(event))
-    reference = json_reference_data['reference']
-    period = json_reference_data['period']
-    survey = json_reference_data['survey']
-    bpmId = json_reference_data['bpmId']
-
-    query_response = "{\"Error\": \"No data found\"}"
-    query_vars = 'reference=' + reference + ';' + 'period=' + period + ';' + 'survey=' + survey + ';'
-
-    business_layer_endpoint = os.getenv("BUSINESS_LAYER_ENDPOINT")
-    call_to_business_layer = business_layer_endpoint + query_vars
-    print('Call to Business Layer: ' + call_to_business_layer)
-
-    try:
-        query_response = requests.get(business_layer_endpoint + query_vars)
-        print('Response: ' + str(query_response))
-        print(query_response.text, "TEXT")
-        print(query_response.content, "CONTENT")
-        print(query_response.status_code, "STATUS CODE")
-        # return(query_response.content)
-    except:
-        print("{\"Error\": \"Problem with call to Business Layer\"}")
-        print('Response: ' + str(query_response))
-        print(query_response.content, "CONTENT")
-        print(query_response.text, "TEXT")
-        print(query_response.status_code, "STATUS CODE")
-        return (query_response.content)
-
-    # Parse String output to JSON
-    query_output = json.loads(query_response.content)
-    print("Query output: " + str(query_output))
-    validation_output = query_output['validation_config']
-
-    # Call function to parse data and change keys
-    parsed_validation_config = parse_validation_data(validation_output)
-    print("Parsed Validation Data : " + str(parsed_validation_config))
-
-    # Extract response and contributor data
-    # Combine all data together
-    data_output = {}
-    data_output['validation_period'] = period
-    data_output['validation_reference'] = reference
-    data_output['validation_survey'] = survey
-    data_output['periodicity'] = query_output['periodicity']
-    data_output['bpmid'] = bpmId
-    data_output['contributor'] = query_output['contributor']
-    data_output['response'] = query_output['response']
-    data_output['validation_config'] = parsed_validation_config
-
-    print("Output to queue: " + str(data_output))
-
-    # Send data to output queue for the Wrangler to pick up
-    queue_url = os.getenv("OUTPUT_QUEUE_URL")
-    print("queue_url: " + queue_url)
-    msg = output_to_queue(queue_url, json.dumps(data_output))
-    if msg is not None:
-        print('Sent message to wrangler queue successfully')
-    else:
-        print('Error in output_to_queue step. Please check its log.')
+    return json.loads(reference_data)
