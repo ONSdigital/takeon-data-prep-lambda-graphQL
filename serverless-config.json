@@ -3,6 +3,6 @@
 "INPUT_QUEUE_URL": "https://sqs.eu-west-2.amazonaws.com/014669633018/TakeOn-DataPrep-Input",
 "OUTPUT_QUEUE_URL": "https://sqs.eu-west-2.amazonaws.com/014669633018/TakeOn-Validation-Wrangler",
 "ERROR_QUEUE_URL": "https://sqs.eu-west-2.amazonaws.com/014669633018/TakeOn-Validation-HandledErrors",
-"BUSINESS_LAYER_ENDPOINT": "http://a8f1926bdf1c111e9a5a70a6b6f05390-484c09026fdfe776.elb.eu-west-2.amazonaws.com:8088/contributor/validationPrepConfig/",
+"BUSINESS_LAYER_ENDPOINT": "http://a8f1926bdf1c111e9a5a70a6b6f05390-484c09026fdfe776.elb.eu-west-2.amazonaws.com:8088//validation/getAllConfiguration//",
 "SECURITY_GROUP_ID": "sg-06fc64d77bd38bea1",
 "SUBNET_ID": "subnet-0cbc63301c37a86ca"}
