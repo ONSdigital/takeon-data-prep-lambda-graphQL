@@ -2,7 +2,6 @@ import os
 import requests
 import json
 
-
 def build_data_endpoint_url(contributor):
     query_variables = 'reference=' + contributor['reference'] + ';period=' + contributor['period'] + ';survey=' + contributor['survey'] + ';'
     business_layer_endpoint = os.getenv("BUSINESS_LAYER_ENDPOINT")
@@ -11,13 +10,13 @@ def build_data_endpoint_url(contributor):
 
 def call_endpoint_to_get_validation_config(api_endpoint):
     try:
-        query_response = requests.get(api_endpoint)
-    except:
-        f'Error: Problem with call to Business Layer'
-        return None
+        response = requests.get(api_endpoint)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        error_response = {}
+        error_response['error'] = f'Calling Business Layer: {err}'
+        return error_response
     finally:
-        f'Response: {query_response}'
-        f'Content: {query_response.content}'
-        f'Text: {query_response.text}'
-        f'Status Code: {query_response.status_code}'
-    return json.loads(query_response.content)
+        print(f'Endpoint: {api_endpoint} - Status: {response.status_code} - Request time: {response.elapsed.total_seconds()}')
+
+    return json.loads(response.content)
